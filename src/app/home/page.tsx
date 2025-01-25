@@ -64,7 +64,6 @@ export default function Home() {
         if (hrefAttribute?.value) {
             event.preventDefault();
             const pageNum = hrefAttribute?.value.split(".")[0]?.replace('#', '');
-            console.log(pageNum)
             setPageNumber(Number(pageNum))
         }
     }
@@ -116,7 +115,6 @@ export default function Home() {
     };
 
     function onDocumentLoadSuccess({ numPages }: { numPages: number }): void {
-        console.log(numPages)
         setNumPages(numPages);
     }
 

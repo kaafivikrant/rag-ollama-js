@@ -1,13 +1,16 @@
 import { ChatOllama, OllamaEmbeddings } from "@langchain/ollama";
+import { env } from "../utils/env";
+
+const { ollama } = env;
 
 export const llm = new ChatOllama({
-    model: "llama3.2",
+    model: ollama.llm.model,
     temperature: 0,
     maxRetries: 2,
-    baseUrl: "http://localhost:11434",
+    baseUrl: ollama.llm.baseUrl,
 });
 
 export const embeddings = new OllamaEmbeddings({
-    model: "nomic-embed-text", // Default value
-    baseUrl: "http://localhost:11434", // Default value
+    model: ollama.embeddings.model, 
+    baseUrl: ollama.embeddings.baseUrl,
 });
