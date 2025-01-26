@@ -96,6 +96,4 @@ src/
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-```
-
-This README provides a comprehensive overview of your project, including its features, setup instructions, and usage guidelines, based on the actual code in your repository. The structure reflects the Next.js application with RAG implementation using Ollama and Supabase.
+``` 
