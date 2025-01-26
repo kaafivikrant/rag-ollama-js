@@ -1,5 +1,9 @@
 # RAG-Ollama-JS
 
+
+https://github.com/user-attachments/assets/8cd544b6-273a-4a06-ae22-bfd8305d755d
+
+
 ## Introduction
 RAG-Ollama-JS is a Next.js application that implements Retrieval-Augmented Generation (RAG) using LangChain.js, Ollama, and Supabase. This project provides a user-friendly interface for document-based question-answering with PDF support. It also supports secured RAG with embeddings used only for logged in users.
 
