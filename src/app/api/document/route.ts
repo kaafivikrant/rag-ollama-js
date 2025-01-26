@@ -11,7 +11,7 @@ export async function GET(req: Request) {
         .from('document_store')
         .list('', { search: userId || '' });
 
-    if (error || !data.length) {
+    if (error || !data.length || !data[0].name.includes(userId || '')) {
         return new Response(error?.message || 'Document search failed', { status: 400 });
     }
 

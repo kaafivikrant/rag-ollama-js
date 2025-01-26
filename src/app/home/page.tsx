@@ -131,6 +131,7 @@ export default function Home() {
     };
 
     const getFile = async () => {
+        if (!user) return;
         const fileRes = await fetch('/api/document', {
             headers: {
                 'User-Id': user

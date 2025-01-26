@@ -29,7 +29,7 @@ export default function Home() {
   };
 
   return (
-    <div className="h-screen flex items-center justify-center bg-gray-100 overflow-hidden">
+    <div className="h-screen flex items-center justify-center bg-gray-100 overflow-hidden"  style={{ height: "92vh" }}>
       {loading && <div className="loader"><i className="fas fa-spinner fa-spin"></i></div>}
       <form onSubmit={handleSubmit} className="bg-white p-8 rounded-lg shadow-lg max-w-sm w-full">
         <h2 className="text-3xl mb-6 text-blue-600 text-center">Login</h2>
