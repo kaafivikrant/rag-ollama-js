@@ -136,7 +136,7 @@ export default function Home() {
                 'User-Id': user
             }
         });
-        if(!fileRes.ok) return;
+        if (!fileRes.ok) return;
         console.log(fileRes)
         const blob = await fileRes.blob(); // Convert Response to Blob
         const file = new File([blob], 'document.pdf'); // Create a File object
@@ -160,7 +160,7 @@ export default function Home() {
     }
 
     return (
-        <div className="flex overflow-hidden">
+        <div className="flex overflow-hidden" style={{ height: "92vh" }}>
             <div className="w-1/2 h-full flex flex-col bg-white shadow-md rounded-lg overflow-hidden">
                 <div className="flex-1 overflow-y-auto p-4">
                     {messages.map((message, index) => (

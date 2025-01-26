@@ -27,13 +27,12 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <div className="h-screen" >
+        <div className="overflow-hidden">
           <header className="top-0 left-0 right-0 bg-blue-600 z-50 p-4 shadow-md">
             <h1 className="text-white text-xl text-center">Secure RAG with Ollama</h1>
           </header>
-          <div className="overflow-hidden">
-            {children}
-          </div>
+
+          {children}
         </div>
       </body>
     </html>
