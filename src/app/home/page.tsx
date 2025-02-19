@@ -131,7 +131,6 @@ export default function Home() {
     };
 
     const getFile = async () => {
-        if (!user) return;
         const fileRes = await fetch('/api/document', {
             headers: {
                 'User-Id': user
@@ -161,83 +160,112 @@ export default function Home() {
     }
 
     return (
-        <div className="flex overflow-hidden" style={{ height: "92vh" }}>
-            <div className="w-1/2 h-full flex flex-col bg-white shadow-md rounded-lg overflow-hidden">
-                <div className="flex-1 overflow-y-auto p-4">
+        <div className="flex overflow-hidden gap-4 p-4 bg-gray-50" style={{ height: "93vh" }}>
+            {/* Chat Section */}
+            <div className="w-1/2 flex flex-col bg-white shadow-xl rounded-xl overflow-hidden border border-gray-100">
+                <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gradient-to-b from-gray-50 to-white">
                     {messages.map((message, index) => (
-                        <div key={index} className={`p-2 rounded mb-2 text-black ${message.sender === "User" ? "bg-blue-100" : "bg-gray-100"}`}>
+                        <div 
+                            key={index} 
+                            className={`p-4 rounded-xl shadow-sm max-w-[85%] ${
+                                message.sender === "User" 
+                                    ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white ml-auto" 
+                                    : "bg-white text-gray-800 border border-gray-100"
+                            }`}
+                        >
                             <span
                                 onClick={handleClick}
-                                className="parsed-text"
+                                className="parsed-text whitespace-pre-wrap"
                                 dangerouslySetInnerHTML={{ __html: parse(message.text) }}
                             />
                         </div>
                     ))}
-                    {loading && <div className="p-2 text-center">Loading...</div>}
+                    {loading && (
+                        <div className="flex justify-center">
+                            <div className="animate-pulse text-blue-600 font-medium">Loading...</div>
+                        </div>
+                    )}
                 </div>
-                <form onSubmit={handleSendMessage} className="flex p-4 items-center">
-                    <input
-                        type="text"
-                        className="flex-1 p-2 border rounded-l text-black"
-                        value={input}
-                        onChange={(e) => setInput(e.target.value)}
-                        placeholder="Type your message..."
-                        disabled={loading}
-                    />
-                    <button
-                        className="p-2 bg-blue-500 text-white rounded-r"
-                        type="submit"
-                        disabled={loading}
-                    >
-                        {loading ? "Sending..." : "Send"}
-                    </button>
-                </form>
+                <div className="border-t border-gray-100 p-4 bg-white">
+                    <form onSubmit={handleSendMessage} className="flex gap-2">
+                        <input
+                            type="text"
+                            className="flex-1 p-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/50 text-gray-700 bg-gray-50"
+                            value={input}
+                            onChange={(e) => setInput(e.target.value)}
+                            placeholder="Type your message..."
+                            disabled={loading}
+                        />
+                        <button
+                            className="px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all shadow-sm disabled:from-gray-300 disabled:to-gray-300 disabled:cursor-not-allowed"
+                            type="submit"
+                            disabled={loading}
+                        >
+                            {loading ? "Sending..." : "Send"}
+                        </button>
+                    </form>
+                </div>
             </div>
-            <div className="w-1/2 h-full flex flex-col bg-white shadow-md rounded-lg overflow-hidden">
+
+            {/* PDF Section */}
+            <div className="w-1/2 flex flex-col bg-white shadow-xl rounded-xl overflow-hidden border border-gray-100">
                 {file ? (
                     <>
-                        <div ref={pdfRef} className="flex-1 overflow-auto p-4">
-                            <div>
+                        <div ref={pdfRef} className="flex-1 overflow-auto p-4 bg-gradient-to-b from-gray-50 to-white">
+                            <div className="flex flex-col items-center">
                                 <Document file={file} onLoadSuccess={onDocumentLoadSuccess}>
                                     <Page pageNumber={pageNumber} />
                                 </Document>
-                                <p>
+                                <p className="mt-4 text-gray-600 font-medium">
                                     Page {pageNumber} of {numPages}
                                 </p>
                             </div>
                         </div>
-                        <div className="flex justify-between p-4">
+                        <div className="border-t border-gray-100 p-4 flex justify-center gap-4 bg-white">
                             <button
                                 onClick={handlePrevPage}
                                 disabled={pageNumber === 1}
-                                className={`p-2 rounded ${pageNumber === 1 ? 'bg-gray-300 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-600 text-white'}`}
+                                className={`px-6 py-2 rounded-xl transition-all shadow-sm ${
+                                    pageNumber === 1 
+                                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
+                                        : 'bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white'
+                                }`}
                             >
-                                &#8592;
+                                ← Previous
                             </button>
                             <button
                                 onClick={handleNextPage}
                                 disabled={pageNumber === numPages}
-                                className={`p-2 rounded ${pageNumber === numPages ? 'bg-gray-300 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-600 text-white'}`}
+                                className={`px-6 py-2 rounded-xl transition-all shadow-sm ${
+                                    pageNumber === numPages 
+                                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
+                                        : 'bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white'
+                                }`}
                             >
-                                &#8594;
+                                Next →
                             </button>
                         </div>
                     </>
                 ) : (
-                    <div className="flex items-center justify-center h-full">
-                        <input
-                            type="file"
-                            id="fileUpload"
-                            className="hidden"
-                            onChange={(e) => handleUpload(e.target.files ? e.target.files[0] : null)}
-                            accept="application/pdf"
-                        />
-                        <button
-                            className="w-64 h-24 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition duration-200 flex items-center justify-center"
-                            onClick={() => document.getElementById('fileUpload')?.click()}
-                        >
-                            Upload File
-                        </button>
+                    <div className="flex items-center justify-center h-full bg-gradient-to-b from-gray-50 to-white">
+                        <div className="text-center">
+                            <input
+                                type="file"
+                                id="fileUpload"
+                                className="hidden"
+                                onChange={(e) => handleUpload(e.target.files ? e.target.files[0] : null)}
+                                accept="application/pdf"
+                            />
+                            <button
+                                className="px-8 py-6 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all shadow-lg group"
+                                onClick={() => document.getElementById('fileUpload')?.click()}
+                            >
+                                <div className="text-xl font-semibold">Upload PDF</div>
+                                <div className="text-sm mt-2 text-blue-100 group-hover:text-white transition-colors">
+                                    Click to browse files
+                                </div>
+                            </button>
+                        </div>
                     </div>
                 )}
             </div>
