@@ -44,7 +44,7 @@ OLLAMA_LLM_MODEL=your_preferred_model
 OLLAMA_EMBEDDINGS_BASE_URL=http://localhost:11434
 OLLAMA_EMBEDDINGS_MODEL=nomic-embed-text
 ```
-4. Run the supabase commands mentioned in supabaseScripts.txt
+4. Run the supabase commands mentioned in **[`supabaseScripts.txt`](https://github.com/AbhisekMishra/rag-ollama-js/blob/main/supabaseScripts.txt)**
 
 5. Start the development server:
 ```bash
