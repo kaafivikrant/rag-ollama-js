@@ -19,6 +19,8 @@ export default function Home() {
     const [numPages, setNumPages] = useState<number>();
     const [user, setUser] = useState<string>('');
     const [file, setFile] = useState<File>();
+    const [pdfLoading, setPdfLoading] = useState<boolean>(true);
+    const [pdfError, setPdfError] = useState<string | null>(null);
 
     const pdfRef = useRef<HTMLDivElement>(null);
     const lastScrollTop = useRef<number>(0);
@@ -51,12 +53,17 @@ export default function Home() {
     useEffect(() => {
         const userId = sessionStorage.getItem('userId') || '';
         setUser(userId);
-        getFile()
-    }, [])
+        setFile(undefined); // Clear any previous file on new session/login
+        setPdfError(null);
+        setPdfLoading(false); // Not loading until user uploads
+    }, []);
 
     useEffect(() => {
-        getFile()
-    }, [user])
+        // On user change, clear file and error/loading states
+        setFile(undefined);
+        setPdfError(null);
+        setPdfLoading(false);
+    }, [user]);
 
     const handleClick = (event: React.MouseEvent<HTMLAnchorElement>) => {
         const target = event.target as HTMLAnchorElement; // Type assertion
@@ -130,34 +137,34 @@ export default function Home() {
         }
     };
 
-    const getFile = async () => {
-        const fileRes = await fetch('/api/document', {
-            headers: {
-                'User-Id': user
-            }
-        });
-        if (!fileRes.ok) return;
-        console.log(fileRes)
-        const blob = await fileRes.blob(); // Convert Response to Blob
-        const file = new File([blob], 'document.pdf'); // Create a File object
-        setFile(file); // Set the File object
-    }
-
     const handleUpload = async (file: File | null) => {
         if (file) {
-            const formData = new FormData();
-            formData.append("file", file);
+            setPdfLoading(true);
+            setPdfError(null);
+            try {
+                const formData = new FormData();
+                formData.append("file", file);
 
-            await fetch("/api/document", {
-                method: "POST",
-                body: formData,
-                headers: {
-                    'User-Id': user
+                const res = await fetch("/api/document", {
+                    method: "POST",
+                    body: formData,
+                    headers: {
+                        'User-Id': user
+                    }
+                });
+                if (!res.ok) {
+                    setPdfError("Failed to upload PDF.");
+                } else {
+                    // After upload, set file for preview
+                    setFile(file);
                 }
-            });
-            getFile()
+            } catch (err) {
+                setPdfError("Error uploading PDF.");
+            } finally {
+                setPdfLoading(false);
+            }
         }
-    }
+    };
 
     return (
         <div className="flex overflow-hidden gap-4 p-4 bg-gray-50" style={{ height: "93vh" }}>
@@ -209,7 +216,34 @@ export default function Home() {
 
             {/* PDF Section */}
             <div className="w-1/2 flex flex-col bg-white shadow-xl rounded-xl overflow-hidden border border-gray-100">
-                {file ? (
+                {pdfLoading ? (
+                    <div className="flex items-center justify-center h-full bg-gradient-to-b from-gray-50 to-white">
+                        <div className="text-center text-blue-600 font-medium animate-pulse">Loading PDF...</div>
+                    </div>
+                ) : !file ? (
+                    <div className="flex items-center justify-center h-full bg-gradient-to-b from-gray-50 to-white">
+                        <div className="text-center">
+                            {pdfError && <div className="mb-4 text-red-500">{pdfError}</div>}
+                            <input
+                                type="file"
+                                id="fileUpload"
+                                className="hidden"
+                                onChange={(e) => handleUpload(e.target.files ? e.target.files[0] : null)}
+                                accept="application/pdf"
+                            />
+                            <button
+                                className="px-8 py-6 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all shadow-lg group"
+                                onClick={() => document.getElementById('fileUpload')?.click()}
+                                disabled={pdfLoading}
+                            >
+                                <div className="text-xl font-semibold">Upload PDF</div>
+                                <div className="text-sm mt-2 text-blue-100 group-hover:text-white transition-colors">
+                                    Click to browse files
+                                </div>
+                            </button>
+                        </div>
+                    </div>
+                ) : (
                     <>
                         <div ref={pdfRef} className="flex-1 overflow-auto p-4 bg-gradient-to-b from-gray-50 to-white">
                             <div className="flex flex-col items-center">
@@ -246,27 +280,6 @@ export default function Home() {
                             </button>
                         </div>
                     </>
-                ) : (
-                    <div className="flex items-center justify-center h-full bg-gradient-to-b from-gray-50 to-white">
-                        <div className="text-center">
-                            <input
-                                type="file"
-                                id="fileUpload"
-                                className="hidden"
-                                onChange={(e) => handleUpload(e.target.files ? e.target.files[0] : null)}
-                                accept="application/pdf"
-                            />
-                            <button
-                                className="px-8 py-6 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all shadow-lg group"
-                                onClick={() => document.getElementById('fileUpload')?.click()}
-                            >
-                                <div className="text-xl font-semibold">Upload PDF</div>
-                                <div className="text-sm mt-2 text-blue-100 group-hover:text-white transition-colors">
-                                    Click to browse files
-                                </div>
-                            </button>
-                        </div>
-                    </div>
                 )}
             </div>
         </div>

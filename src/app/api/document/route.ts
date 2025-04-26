@@ -8,7 +8,7 @@ export async function GET(req: Request) {
     const userId = req.headers.get('User-Id');
     const { data, error } = await supabaseClient
         .storage
-        .from('document_store')
+        .from('documentstore')
         .list('', { search: userId || '' });
 
     if (error || !data.length || !data[0].name.includes(userId || '')) {
@@ -17,7 +17,7 @@ export async function GET(req: Request) {
 
     const { data: fileData, error: fileError } = await supabaseClient
         .storage
-        .from('document_store')
+        .from('documentstore')
         .download(data[0].name);
 
     if (fileError) {
@@ -40,31 +40,40 @@ export async function POST(req: Request) {
 
     const { data, error } = await supabaseClient
         .storage
-        .from('document_store')
+        .from('documentstore')
         .upload(`${userId}.${fileExtension}`, file, { upsert: true });
 
     if (error) return new Response(error.message || 'Upload failed', { status: 400 });
 
-    const pdfLoader = new PDFLoader(file, { splitPages: true, parsedItemSeparator: '' });
-    const pdfDoc = await pdfLoader.load();
+    try {
+        const pdfLoader = new PDFLoader(file, { splitPages: true, parsedItemSeparator: '' });
+        const pdfDoc = await pdfLoader.load();
 
-    const pageContent = pdfDoc.map(doc => doc.pageContent);
-    const pageHeaders = pdfDoc.map(doc => ({
-        documentName: `${userId}.${fileExtension}`,
-        pageNumber: doc?.metadata?.loc?.pageNumber,
-        userId,
-    }));
+        const pageContent = pdfDoc.map(doc => doc.pageContent);
+        const pageHeaders = pdfDoc.map(doc => ({
+            documentName: `${userId}.${fileExtension}`,
+            pageNumber: doc?.metadata?.loc?.pageNumber,
+            userId,
+        }));
 
-    const splitter = new RecursiveCharacterTextSplitter({
-        chunkSize: 1000,
-        chunkOverlap: 100,
-        separators: ['\n\n', '\n', ' ', ''],
-    });
+        const splitter = new RecursiveCharacterTextSplitter({
+            chunkSize: 1000,
+            chunkOverlap: 100,
+            separators: ['\n\n', '\n', ' ', ''],
+        });
 
-    const docOutput = await splitter.createDocuments([...pageContent], pageHeaders);
-    const { error: deleteError } = await supabaseClient.rpc('delete_documents_by_user', { userid: userId });
-    if (deleteError) throw new Response('Error in deleting embeddings!', { status: 400 });
+        const docOutput = await splitter.createDocuments([...pageContent], pageHeaders);
 
-    await vectorStore().addDocuments(docOutput);
-    return new Response('', { status: 201 });
+        const { error: deleteError } = await supabaseClient.rpc('delete_documents_by_user', { userid: userId });
+        if (deleteError) {
+            console.error('Error deleting old embeddings:', deleteError);
+            throw new Response('Error in deleting embeddings!', { status: 400 });
+        }
+
+        await vectorStore().addDocuments(docOutput);
+        return new Response('', { status: 201 });
+    } catch (err: any) {
+        console.error('Embedding or Supabase error:', err);
+        return new Response('Embedding or Supabase error: ' + (err?.message || err), { status: 500 });
+    }
 }
